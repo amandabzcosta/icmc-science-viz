@@ -1,0 +1,13 @@
+tabela,campo,cobertura
+obras,doi,98.3
+obras,titulo,100.0
+obras,ano,100.0
+obras,resumo,67.6
+obras,topico principal,99.9
+obras,palavras-chave,99.8
+obras,idioma,97.7
+obras,pais de >= 1 autor,98.9
+autorias,texto de afiliacao,98.6
+autorias,instituicao,95.6
+autorias,pais,95.6
+autorias,orcid,83.8

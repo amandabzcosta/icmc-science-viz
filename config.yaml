@@ -1,0 +1,57 @@
+openalex:
+  base_url: "https://api.openalex.org"
+  per_page: 200
+  campos: >-
+    id,doi,title,publication_year,type,cited_by_count,counts_by_year,
+    abstract_inverted_index,primary_topic,topics,keywords,referenced_works_count,
+    authorships,is_retracted,language
+
+escopo:
+  ano_inicio: 2010
+  ano_fim: 2026
+  tipos_incluidos: ["article", "review", "conference-paper", "book-chapter", "preprint"]
+  excluir_retratados: true  
+
+afiliacao_icmc:
+  variantes:
+    - id: pt_completo
+      textos: ["Instituto de Ciências Matemáticas e de Computação"]
+    - id: pt_sem_acento
+      textos: ["Instituto de Ciencias Matematicas e de Computacao"]
+    - id: en_mathematical_cidade
+      textos: ["Institute of Mathematical and Computer Sciences", "São Carlos"]
+    - id: en_mathematical_cidade_sem_acento
+      textos: ["Institute of Mathematical and Computer Sciences", "Sao Carlos"]
+    - id: en_mathematics_cidade
+      textos: ["Institute of Mathematics and Computer Sciences", "São Carlos"]
+    - id: en_mathematics_cidade_sem_acento
+      textos: ["Institute of Mathematics and Computer Sciences", "Sao Carlos"]
+    - id: sigla_usp
+      textos: ["ICMC USP"]
+    - id: sigla_sao_carlos
+      textos: ["ICMC São Carlos"]
+    - id: sigla_sao_carlos_sem_acento
+      textos: ["ICMC Sao Carlos"]
+
+  regras_autoria:
+    - id: nome_pt
+      padrao: 'cienc(ias?)?mat(ematicas)?e(de|da)?comput|cienciasmatematicasdesaocarlos'
+    - id: nome_en
+      padrao: 'mathematic(s|al)(sciences)?andcomput(er|ing|ation|ational)(sciences?)?|computerandmathematicalsciences|mathematicalsciencesofsaocarlos'
+      exige_tambem: 'saocarlos|saopaulo|usp|icmc'
+    - id: sigla
+      padrao: 'icms?c'
+      exige_tambem: 'saocarlos|saopaulo|usp|mathematic|matematic'
+
+rede:
+  max_autores_por_obra: 30
+  min_obras_por_autor: 2
+  semente_aleatoria: 42
+
+embeddings:
+  modelo: "a definir no M6 (sentence-transformers leve, CPU)"
+  umap:
+    n_neighbors: 15
+    min_dist: 0.1
+    metric: "cosine"
+    random_state: 42

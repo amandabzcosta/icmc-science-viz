@@ -1,0 +1,14 @@
+{
+  "autores_icmc": 1962,
+  "autores_icmc_com_min_obras": 1148,
+  "autores_icmc_sem_coautor_icmc": 48,
+  "autores_na_rede": 1100,
+  "arestas_na_rede": 3426,
+  "componentes": 20,
+  "autores_no_componente_gigante": 906,
+  "arestas_no_componente_gigante": 3139,
+  "autores_fora_do_gigante": 194,
+  "obras_excluidas_por_max_autores": 6,
+  "n_comunidades": 20,
+  "modularidade": 0.8189
+}

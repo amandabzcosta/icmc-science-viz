@@ -1,0 +1,55 @@
+:root {
+  --superficie: #fcfcfb;
+  --pagina: #f9f9f7;
+  --tinta: #0b0b0b;
+  --tinta-secundaria: #52514e;
+  --tinta-fraca: #898781;
+  --borda: rgba(11, 11, 11, 0.10);
+}
+
+body {
+  margin: 0;
+  background: var(--pagina);
+  color: var(--tinta);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+}
+
+main { max-width: 1800px; margin: 0 auto; padding: 16px; }
+
+header h1 { font-size: 24px; margin: 0 0 4px; }
+header p { margin: 0 0 16px; color: var(--tinta-secundaria); }
+
+.grade { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 1200px) { .grade { grid-template-columns: 1fr; } }
+
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 14px 16px;
+  min-width: 0; 
+}
+.cartao h2 { font-size: 18px; margin: 0; }
+.pergunta { margin: 2px 0 10px; color: var(--tinta-secundaria); }
+
+.controles { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; margin-bottom: 6px; }
+.controles label { margin-right: 12px; cursor: pointer; }
+.controles input { margin-right: 4px; }
+.busca { min-width: 260px; flex: 1; }
+
+.meta { color: var(--tinta-secundaria); font-size: 13px; margin: 4px 0; }
+
+.detalhes { border-top: 1px solid var(--borda); margin-top: 8px; padding-top: 8px; }
+.detalhes.vazio { color: var(--tinta-fraca); font-size: 13px; }
+.detalhes h3 { font-size: 16px; margin: 0 0 4px; }
+.detalhes ol { margin: 4px 0; padding-left: 20px; font-size: 13px; }
+.titulo-obra { color: var(--tinta); }
+
+.tabela-metricas { border-collapse: collapse; font-size: 13px; margin: 6px 0; }
+.tabela-metricas th { text-align: left; font-weight: normal; color: var(--tinta-secundaria); padding: 2px 8px 2px 0; }
+.tabela-metricas td { font-variant-numeric: tabular-nums; padding: 2px 18px 2px 0; }
+
+.painel-tabela { margin-top: 8px; font-size: 13px; }
+.painel-tabela summary { cursor: pointer; color: var(--tinta-secundaria); padding: 4px 0; }
+.painel-tabela summary:focus-visible, .controles input:focus-visible { outline: 2px solid #2a78d6; outline-offset: 2px; }
