@@ -1,95 +1,170 @@
 # icmc-science-viz
 
-Exploração visual da produção científica do ICMC-USP (São Carlos) a partir da OpenAlex.
-Projeto da disciplina SCC0252 – Visualização Computacional (ICMC-USP, 2026/2).
+**Análise visual de colaborações científicas no ICMC-USP (2010–2026)**
 
-Autora: Amanda Bezerra da Costa — nº USP 12680861
+Aplicativo interativo e conjunto de dados sobre a produção científica do Instituto de Ciências
+Matemáticas e de Computação da USP (São Carlos): quem publica com quem, como as áreas de pesquisa
+evoluem e quais autores fazem a ponte entre grupos diferentes.
 
-## Instalação
+Projeto da disciplina SCC0252 – Visualização Computacional (ICMC-USP).
+Autora: Amanda Bezerra da Costa.
 
-Testado com Python 3.13 (versões das bibliotecas fixadas em `requirements.txt`). Se `python` não for reconhecido no Windows mas houver Anaconda instalado, use o caminho completo (ex.: `C:\Users\<usuário>\anaconda3\python.exe`).
+---
+
+## Sobre o projeto
+
+Cada artigo registra autores, afiliações, temas e citações, mas essa informação raramente é vista
+em conjunto. Este projeto reúne a produção do ICMC numa base única e a explora com visualizações
+interativas para responder três perguntas:
+
+1. **Colaboração entre grupos** — quais comunidades de coautoria mais colaboram entre si, e quão coesas são?
+2. **Evolução das áreas** — como as áreas e subáreas evoluíram em volume e em impacto?
+3. **Autores-ponte** — quem liga grupos diferentes, e essas pessoas se destacam também em citações?
+
+## Os dados
+
+- **Fonte:** [OpenAlex](https://openalex.org), base aberta de metadados científicos, consultada pela API.
+- **Como o ICMC é identificado:** a OpenAlex não tem o ICMC como instituição (só a USP inteira).
+  Por isso, as obras são buscadas pelo **texto da afiliação** dos autores, com variantes do nome
+  em português, inglês e sigla, com e sem acento. Depois, cada autoria é conferida por regras
+  sobre o texto normalizado, que toleram erros comuns (acentos quebrados, hifenização,
+  abreviações, nome antigo do instituto).
+- **Escopo:** 2010–2026; artigos, revisões, trabalhos de conferência, capítulos de livro e preprints.
+
+| Conteúdo | Quantidade |
+|---|---:|
+| Obras | 4.412 |
+| Autores distintos | 6.012 |
+| Autores do ICMC | 1.962 |
+| Autores na rede de coautoria (componente principal) | 906 |
+| Comunidades de coautoria (Louvain) | 20 |
+| Domínios / campos / subcampos / tópicos | 4 / 23 / 150 / 648 |
+
+**Tabelas processadas** (`data/processed/`, formato Parquet):
+
+| Arquivo | Uma linha por… | Principais colunas |
+|---|---|---|
+| `obras.parquet` | obra | título, resumo, ano, tipo, citações, hierarquia de tópicos, nº de autores, colaboração internacional, citações normalizadas e por ano |
+| `autorias.parquet` | par obra × autor | autor, posição, afiliação bruta, países, se a autoria é do ICMC |
+| `autores.parquet` | autor | nº de obras, citações, primeiro e último ano, se é do ICMC |
+| `arestas_coautoria.parquet` | par de autores do ICMC | nº de obras em conjunto e peso fracionário |
+| `metricas_autores.parquet` | autor da rede | comunidade, grau, participação, intermediação, constraint de Burt, posição no desenho |
+| `comunidades.parquet` | comunidade | tamanho, coesão, tópicos característicos (TF-IDF) |
+| `pares_comunidades.parquet` | par de comunidades | nº de obras em conjunto |
+| `topicos.parquet` | tópico | domínio > campo > subcampo > tópico, nº de obras |
+
+Arquivos de apoio: `cobertura.csv` (preenchimento de cada campo), `limpeza.json` (obras removidas
+em cada etapa), `rede_resumo.json` (tamanho da rede e modularidade) e `autores_fragmentados.csv`
+(nomes associados a mais de um identificador).
+
+## As visualizações
+
+O aplicativo reúne quatro visualizações. Cada uma tem tooltip, detalhes sob demanda e a opção
+"Ver os dados em tabela".
+
+| Visualização | Pergunta | Interações |
+|---|---|---|
+| **Rede de coautoria** — cor e forma indicam a comunidade; tamanho, o nº de obras | 1 e 3 | zoom, busca por nome, clique para ver métricas e obras mais citadas, colorir por métrica de ponte |
+| **Evolução das áreas** — um painel por área (small multiples) | 2 | nº de obras, % do ano ou citações por obra; campo ou subcampo; escala própria ou comum |
+| **Hierarquia de tópicos** — treemap colorido por citações por ano | 2 | clicar para descer e subir de nível; obras mais citadas da área |
+| **Ranking de autores-ponte** — métrica de ponte e citações lado a lado | 3 | escolher a métrica (participação, intermediação, constraint) e a ordenação |
+
+**Acessibilidade:** a paleta foi validada para daltonismo, e nenhuma informação depende só da cor
+(forma do marcador na rede, código da comunidade no ranking, título dos painéis na série temporal).
+`src/report/simular_daltonismo.py` gera versões de uma imagem simulando protanopia, deuteranopia e
+tritanopia.
+
+## Como executar
+
+### Instalação
+
+Requer Python 3.13 (as versões das bibliotecas estão fixadas em `requirements.txt`).
 
 ```bash
 python -m venv .venv
-.venv\Scripts\activate          # Windows  (Linux/Mac: source .venv/bin/activate)
+.venv\Scripts\activate            # Windows  (Linux/Mac: source .venv/bin/activate)
 pip install -r requirements.txt
 ```
 
-Copie `.env.example` para `.env` e preencha `OPENALEX_API_KEY` (chave grátis em https://openalex.org/settings/api).
+### Abrir o aplicativo
 
-## Etapas
-
-### M0 — Contagem das variantes de afiliação
+As tabelas processadas já estão no repositório, então basta:
 
 ```bash
-python src/collect/count_affiliation_variants.py
-python src/collect/count_affiliation_variants.py --ano-inicio 2010 --ano-fim 2026
+python app/app.py
 ```
 
-Imprime quantas obras casam com cada variante definida em `config.yaml` e o consumo de orçamento da API.
-Use `--escopo` para restringir aos anos e tipos do `config.yaml`.
+e abrir http://127.0.0.1:8050. O aplicativo funciona sem internet.
 
-### M1 — Coleta e validação da afiliação
+### Reproduzir os dados do zero
+
+A coleta precisa de uma chave gratuita da OpenAlex
+([openalex.org/settings/api](https://openalex.org/settings/api)). Copie `.env.example` para `.env`
+e preencha `OPENALEX_API_KEY`.
 
 ```bash
-python src/collect/collect_openalex.py          # baixa (com cache) e une as variantes
-python src/collect/collect_openalex.py --so-unir   # só refaz a união a partir do cache
-python src/collect/validate_affiliation.py      # resumo + amostra manual em docs/validacao_afiliacao.md
+python src/collect/count_affiliation_variants.py --escopo   # quantas obras cada variante encontra
+python src/collect/collect_openalex.py                       # coleta (com cache) e une as variantes
+python src/collect/validate_affiliation.py                   # resumo e amostra para conferência manual
+python src/process/build_tables.py                           # limpeza, novas variáveis, cobertura
+python src/process/build_network.py                          # rede, comunidades e métricas de ponte
+python src/process/evidencias_q1_q3.py                       # números que respondem às três perguntas
 ```
 
-- Cache: `data/raw/obras/<variante>/<ano>.jsonl` (anos já baixados são pulados).
-- Resultado: `data/raw/obras_unidas.jsonl` (uma obra por linha, com `matched_by`).
-- Consumo de orçamento: `data/raw/log_coleta.jsonl`.
+- A coleta guarda um cache por variante e por ano em `data/raw/` e pode ser interrompida e retomada.
+- O consumo da API fica registrado em `data/raw/log_coleta.jsonl`.
+- Com as mesmas versões de bibliotecas, o processamento gera sempre as mesmas tabelas (sementes fixas).
 
-### M2 — Tabelas limpas, rede e comunidades
+### Gerar imagens das visualizações
 
 ```bash
-python src/process/build_tables.py     # obras, autorias, autores, tópicos, cobertura
-python src/process/build_network.py    # arestas, comunidades (Louvain), métricas de ponte
+python src/report/gerar_figuras.py                     # todas, em tamanho de slide e de documento
+python src/report/gerar_figuras.py --so v3_treemap     # só uma
+python src/report/gerar_figuras.py --com-app           # inclui um print da tela inteira do aplicativo
 ```
 
-Saídas em `data/processed/` (Parquet). Os números da limpeza ficam em `limpeza.json`,
-a cobertura dos campos em `cobertura.csv` e o resumo da rede em `rede_resumo.json`.
+Cada visualização é salva sozinha, em alta resolução, em `report/entrega1/figuras/individuais/`.
+O script usa o Microsoft Edge ou o Google Chrome (sem abrir janela) para gerar as imagens.
 
-### M3 — Aplicativo (visualizações V1–V4)
+### Empacotar código e dados
 
 ```bash
-python app/app.py      # abre em http://127.0.0.1:8050 (funciona offline)
-python src/process/evidencias_q1_q3.py   # números que respondem Q1–Q3
+python src/empacotar.py --nome <nome>      # gera dist/icmc-science-viz_<nome>.zip
 ```
 
-Visões: rede de coautoria (V1), autores-ponte (V4), evolução das áreas (V2) e hierarquia de tópicos (V3).
-Nesta entrega cada interação afeta só a própria visão. Cada visão tem "Ver os dados em tabela".
+O pacote leva o código, as tabelas processadas e o conjunto coletado, mas nunca o `.env`.
 
-### M4 — Acessibilidade e entrega
+## Estrutura do repositório
 
-```bash
-python src/report/simular_daltonismo.py report/entrega1/figuras/app_visao_geral.png  # protan/deutan/tritan
-python src/empacotar.py --nome entrega1     # gera dist/icmc-science-viz_entrega1.zip
+```
+icmc-science-viz/
+├── app/                     aplicativo Dash
+│   ├── app.py               ponto de entrada
+│   ├── dados.py             carrega as tabelas e define cores das comunidades
+│   ├── tema.py              aparência dos gráficos e tamanhos de exportação
+│   ├── componentes.py       cartões, painéis de detalhes e tabelas
+│   └── views/               uma visualização por arquivo
+├── src/
+│   ├── collect/             consulta à OpenAlex e identificação do ICMC
+│   ├── process/             limpeza, rede, comunidades e métricas
+│   └── report/              imagens das visualizações e simulação de daltonismo
+├── data/
+│   ├── raw/                 cache da coleta (fora do git)
+│   └── processed/           tabelas prontas para o aplicativo
+├── report/                  imagens geradas
+├── config.yaml              parâmetros de coleta, escopo, regras de afiliação e rede
+└── requirements.txt
 ```
 
-O pacote leva código, documentação, `data/processed/` e o conjunto coletado
-(`data/raw/obras_unidas.jsonl`), mas nunca o `.env`. Para refazer só o processamento
-a partir do pacote (sem chave da API): `build_tables.py` → `build_network.py` → `app/app.py`.
+## Ferramentas
 
-### Figuras individuais (slides e relatório)
+Python · [Dash](https://dash.plotly.com) e [plotly.py](https://plotly.com/python/) (visualização) ·
+pandas · NetworkX (rede, Louvain, centralidades) · scikit-learn (TF-IDF) · OpenAlex API.
 
-```bash
-python src/report/gerar_figuras.py                  # todas as visões, perfis slide e relatório
-python src/report/gerar_figuras.py --perfil slide --so v3_treemap
-python src/report/gerar_figuras.py --com-app        # inclui o print da tela inteira do app
-```
+## Limitações
 
-Cada visão é salva sozinha em `report/entrega1/figuras/individuais/<perfil>/`
-(slide: 2560 × 1440; relatório: 2460 × 1680), com as mesmas funções de figura do app.
-Requer Microsoft Edge ou Google Chrome instalado (usado sem janela para gerar o PNG).
-
-## Estrutura
-
-- `config.yaml` — parâmetros de coleta, rede e embeddings
-- `src/collect/` — scripts de consulta à OpenAlex
-- `src/process/` — limpeza, rede, embeddings, exportação para o app
-- `data/raw/` (cache da coleta, fora do git) e `data/processed/`
-- `app/` — aplicação Dash
-- `docs/` — decisões, validação da afiliação, perguntas de arguição
-- `report/` — relatórios das entregas
+- A identificação do ICMC depende do texto de afiliação: autores que declaram apenas
+  "Universidade de São Paulo" não são reconhecidos naquela obra.
+- Comunidades encontradas pelo algoritmo refletem padrões de coautoria, não grupos de pesquisa formais.
+- A cobertura e a classificação temática dependem da OpenAlex; 2026 está incompleto e as citações
+  de obras recentes ainda estão crescendo.
