@@ -1,8 +1,3 @@
-"""V1 — Rede de coautoria entre autores ICMC (componente gigante). Responde Q1 e Q3.
-
-Interações (1ª entrega, só dentro desta visão): hover, clique -> detalhes,
-zoom/pan, busca por nome, colorir por comunidade ou por métrica de ponte.
-"""
 import numpy as np
 import plotly.graph_objects as go
 from dash import Input, Output, ctx, dcc, html
@@ -20,14 +15,10 @@ METRICAS_COR = {
     "constraint": "Constraint de Burt (menor = mais ponte)",
 }
 
-
 def tamanho_no(n_obras):
-    """Área do nó proporcional ao nº de obras (raiz quadrada), entre 6 e 26 px."""
     return np.clip(4 + 2.2 * np.sqrt(n_obras), 6, 26)
 
-
 def tracos_arestas():
-    """Arestas em 3 espessuras (1, 2–3, 4+ obras juntos); um traço por faixa, sem hover."""
     faixas = [(1, 1, 0.4, 0.25), (2, 3, 1.0, 0.4), (4, 10_000, 2.2, 0.55)]
     tracos = []
     for minimo, maximo, largura, opacidade in faixas:
@@ -40,13 +31,11 @@ def tracos_arestas():
                                    line=dict(width=largura, color=f"rgba(82,81,78,{opacidade})")))
     return tracos
 
-
-TRACOS_ARESTAS = tracos_arestas()  # não mudam; calculados uma vez
+TRACOS_ARESTAS = tracos_arestas()
 DICA = "Clique em um autor (ou busque pelo nome) para ver os detalhes."
 TEXTO_HOVER = ("<b>%{customdata[1]}</b><br>%{customdata[2]}<br>"
                "Obras: %{customdata[3]} · Citações: %{customdata[4]}<br>"
                "Coautores ICMC: %{customdata[5]}<extra></extra>")
-
 
 def dados_hover(df):
     return np.stack([
@@ -54,9 +43,7 @@ def dados_hover(df):
         df["n_obras"], df["citacoes_total"], df["grau"],
     ], axis=-1)
 
-
 def tracos_por_comunidade():
-    """Um traço por grupo (7 maiores + Outras), com cor E forma próprias (codificação redundante)."""
     tracos = []
     grupos = METRICAS["comunidade"].map(grupo_comunidade)
     for g in list(range(N_DESTAQUE)) + [None]:
@@ -71,9 +58,7 @@ def tracos_por_comunidade():
         ))
     return tracos
 
-
 def traco_por_metrica(metrica):
-    """Um só traço, cor sequencial pela métrica. Constraint usa a escala invertida."""
     return [go.Scatter(
         x=METRICAS["x"], y=METRICAS["y"], mode="markers", showlegend=False,
         marker=dict(size=tamanho_no(METRICAS["n_obras"]), color=METRICAS[metrica],
@@ -83,15 +68,12 @@ def traco_por_metrica(metrica):
         customdata=dados_hover(METRICAS), hovertemplate=TEXTO_HOVER,
     )]
 
-
 def traco_destaque(autor_id):
-    """Anel + nome em volta do autor buscado."""
     linha = METRICAS[METRICAS["autor_id"] == autor_id].iloc[0]
     return go.Scatter(x=[linha["x"]], y=[linha["y"]], mode="markers+text", showlegend=False,
                       text=[linha["nome"]], textposition="top center", textfont=dict(size=14, color=TINTA),
                       marker=dict(size=34, color="rgba(0,0,0,0)", line=dict(width=3, color=TINTA)),
                       hoverinfo="skip")
-
 
 def figura(cor_por, autor_buscado):
     tracos = TRACOS_ARESTAS + (tracos_por_comunidade() if cor_por == "comunidade" else traco_por_metrica(cor_por))
@@ -104,14 +86,12 @@ def figura(cor_por, autor_buscado):
                       legend=dict(orientation="h", y=-0.02, yanchor="top", itemsizing="constant"))
     return aplicar_tema(fig, altura=560)
 
-
 def tabela_comunidades():
     c = COMUNIDADES.reset_index()
     return c.assign(Comunidade=c["comunidade"].map(nome_comunidade))[
         ["Comunidade", "n_autores", "n_obras", "fracao_peso_interno", "densidade_interna", "rotulo"]
     ].rename(columns={"n_autores": "Autores", "n_obras": "Obras", "fracao_peso_interno": "Coesão (peso interno)",
                       "densidade_interna": "Densidade", "rotulo": "Tópicos característicos"})
-
 
 def layout():
     opcoes_busca = [{"label": n, "value": a}
@@ -129,7 +109,6 @@ def layout():
         html.Div([html.Div(id="rede-detalhes", children=dica(DICA)),
                   painel_tabela("rede-tabela", tabela_comunidades())]),
     )
-
 
 def registrar_callbacks(app):
     @app.callback(Output("rede-grafico", "figure"), Input("rede-cor", "value"), Input("rede-busca", "value"))

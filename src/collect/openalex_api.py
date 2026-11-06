@@ -1,6 +1,5 @@
 import os
 import time
-
 import requests
 import yaml
 from dotenv import load_dotenv

@@ -1,18 +1,3 @@
-"""
-Gera cada visualização SOZINHA, como imagem grande, para o slide e para o relatório.
-
-Usa as mesmas funções de figura do app (nada é redesenhado à mão) e o perfil de
-exportação de app/tema.py. A imagem é feita abrindo a figura num navegador sem
-janela (Edge ou Chrome), porque o kaleido não está instalado e assim tudo roda offline.
-
-Saída: report/entrega1/figuras/individuais/<perfil>/<nome>.png
-
-Uso (a partir da raiz do repositório):
-    python src/report/gerar_figuras.py                     # todas, nos dois perfis
-    python src/report/gerar_figuras.py --perfil slide
-    python src/report/gerar_figuras.py --so v3_treemap
-    python src/report/gerar_figuras.py --com-app           # inclui um print da tela inteira do app
-"""
 import argparse
 import subprocess
 import sys
@@ -20,7 +5,6 @@ import tempfile
 import time
 from pathlib import Path
 from urllib.request import urlopen
-
 from PIL import Image, ImageDraw, ImageFont
 
 RAIZ = Path(__file__).resolve().parents[2]
@@ -39,16 +23,13 @@ NAVEGADORES = [
     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
 ]
 
-
 def navegador():
     for caminho in NAVEGADORES:
         if Path(caminho).exists():
             return caminho
     raise SystemExit("Edge ou Chrome não encontrado. Ajuste a lista NAVEGADORES em gerar_figuras.py.")
 
-
 def fotografar(url, destino, largura, altura, escala):
-    """Abre `url` num navegador sem janela e salva a tela como PNG."""
     destino = Path(destino).resolve()  # o navegador roda em outra pasta: precisa do caminho completo
     subprocess.run([navegador(), "--headless=new", "--disable-gpu", "--hide-scrollbars",
                     f"--force-device-scale-factor={escala}", f"--window-size={largura},{altura}",
@@ -56,7 +37,6 @@ def fotografar(url, destino, largura, altura, escala):
                    capture_output=True, timeout=120)
     if not Path(destino).exists():
         raise SystemExit(f"O navegador não gerou {destino}.")
-
 
 def salvar_figura(fig, destino, perfil):
     p = PERFIS[perfil]
@@ -67,19 +47,13 @@ def salvar_figura(fig, destino, perfil):
                         f"{corpo}</body></html>", encoding="utf-8")
         fotografar(html.as_uri(), destino, p["largura"], p["altura"], p["escala"])
 
-
-# ------------------------------------------------------------------ inventário
-
 def autor_maior_intermediacao():
     return METRICAS.nlargest(1, "intermediacao")["autor_id"].iat[0]
 
-
 def legenda_a_direita(fig, perfil):
-    """No 16:9 do slide, a legenda da rede rende mais na lateral do que embaixo."""
     if perfil == "slide":
         fig.update_layout(legend=dict(orientation="v", x=1.01, y=1, xanchor="left", yanchor="top"))
     return fig
-
 
 FIGURAS = {
     "v1_rede_comunidades": lambda perfil: legenda_a_direita(rede.figura("comunidade", None), perfil),
@@ -92,24 +66,18 @@ FIGURAS = {
     "v4_ranking_intermediacao": lambda perfil: ranking.figura("intermediacao", "metrica"),
 }
 
-
-# ------------------------------------------------------------------ acessibilidade
-
 def fonte(tamanho):
     try:
         return ImageFont.truetype("arial.ttf", tamanho)
     except OSError:
         return ImageFont.load_default()
 
-
 def com_rotulo(imagem, texto):
-    """Acrescenta uma faixa branca com o nome da simulação em cima da imagem."""
     altura = imagem.height // 12
     nova = Image.new("RGB", (imagem.width, imagem.height + altura), "white")
     nova.paste(imagem, (0, altura))
     ImageDraw.Draw(nova).text((imagem.width // 40, altura // 5), texto, fill=(11, 11, 11), font=fonte(altura // 2))
     return nova
-
 
 def grade(imagens, colunas, espaco):
     linhas = (len(imagens) + colunas - 1) // colunas
@@ -119,9 +87,7 @@ def grade(imagens, colunas, espaco):
         saida.paste(im, ((i % colunas) * (w + espaco), (i // colunas) * (h + espaco)))
     return saida
 
-
 def acessibilidade(pasta):
-    """A partir do ranking já salvo, gera as versões simuladas (modelo de Machado et al., 2009)."""
     base = Image.open(pasta / "v4_ranking_intermediacao.png").convert("RGB")
     versoes = {"Visão normal": base}
     nomes = {"protanopia": "Protanopia", "deuteranopia": "Deuteranopia", "tritanopia": "Tritanopia"}
@@ -133,9 +99,6 @@ def acessibilidade(pasta):
     quatro = grade([com_rotulo(im, n) for n, im in versoes.items()], 2, espaco)
     quatro.save(pasta / "acessibilidade_ranking_4_visoes.png")
     return ["acessibilidade_ranking_normal_vs_deuteranopia", "acessibilidade_ranking_4_visoes"]
-
-
-# ------------------------------------------------------------------ print do app inteiro
 
 def print_do_app(pasta):
     servidor = subprocess.Popen([sys.executable, str(RAIZ / "app/app.py")], cwd=RAIZ,
@@ -152,9 +115,6 @@ def print_do_app(pasta):
         fotografar("http://127.0.0.1:8050/", pasta / "app_visao_geral.png", 1920, 1420, 2)
     finally:
         servidor.terminate()
-
-
-# ------------------------------------------------------------------ principal
 
 def main():
     parser = argparse.ArgumentParser(description="Gera cada visualização sozinha, em tamanho grande")
@@ -183,7 +143,6 @@ def main():
             arquivo = pasta / f"{nome}.png"
             w, h = Image.open(arquivo).size
             print(f"  {nome:48s} {w:5d} x {h:<5d} {arquivo.stat().st_size / 1e6:5.2f} MB")
-
 
 if __name__ == "__main__":
     main()

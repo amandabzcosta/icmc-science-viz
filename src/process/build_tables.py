@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 import pandas as pd
 
-# Reaproveita as regras de afiliação e o leitor do config que estão em src/collect
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "collect"))
 from afiliacao import autoria_icmc, normalizar  # noqa: E402
 from openalex_api import carregar_config  # noqa: E402

@@ -24,25 +24,19 @@ def aplicar_tema(fig, altura=420):
     fig.update_yaxes(gridcolor=GRADE, linecolor=EIXO, zeroline=False, tickcolor=EIXO)
     return fig
 
-# Perfis para exportar uma visão sozinha, como imagem grande (slide ou relatório).
-# k_texto aumenta fontes; k_marca aumenta pontos e linhas (menos que o texto, para a rede não ficar entupida).
 PERFIS = {
     "slide": dict(largura=1280, altura=720, k_texto=1.6, k_marca=1.2, escala=2),      # 2560 x 1440 px
     "relatorio": dict(largura=820, altura=560, k_texto=1.2, k_marca=1.0, escala=3),   # 2460 x 1680 px
 }
 
-
 def _escalar(valor, k):
-    """Multiplica um número ou uma lista/array de números por k (None fica None)."""
     if valor is None:
         return None
     if isinstance(valor, (int, float)):
         return valor * k
     return [v * k for v in valor]
 
-
 def aplicar_perfil(fig, nome):
-    """Ajusta uma figura do app para ser exportada sozinha no perfil `nome`."""
     p = PERFIS[nome]
     kt, km = p["k_texto"], p["k_marca"]
     base = fig.layout.font.size or 13
@@ -74,7 +68,6 @@ def aplicar_perfil(fig, nome):
     if fig.layout.coloraxis.colorbar.thickness:
         fig.layout.coloraxis.colorbar.thickness *= kt
     return fig
-
 
 def figura_vazia(mensagem):
     fig = go.Figure()

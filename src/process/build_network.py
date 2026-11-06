@@ -37,7 +37,6 @@ def montar_grafo(arestas):
     return grafo
 
 def detectar_comunidades(grafo, semente):
-    """Louvain com semente fixa. Comunidades numeradas da maior (0) para a menor."""
     grupos = nx.community.louvain_communities(grafo, weight="peso", seed=semente)
     grupos = sorted(grupos, key=len, reverse=True)
     modularidade = nx.community.modularity(grafo, grupos, weight="peso")

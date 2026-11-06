@@ -14,8 +14,8 @@ def q1(comunidades, pares):
     print("\nCoesão (fração do peso das coautorias que fica dentro da comunidade):")
     c = comunidades.sort_values("fracao_peso_interno")
     print(f"  mediana: {comunidades['fracao_peso_interno'].median():.2f}")
-    print(f"  menos coesas: " + "; ".join(f"C{r.comunidade} {r.fracao_peso_interno:.2f}" for r in c.head(3).itertuples()))
-    print(f"  mais coesas:  " + "; ".join(f"C{r.comunidade} {r.fracao_peso_interno:.2f}" for r in c.tail(3).itertuples()))
+    print("  menos coesas: " + "; ".join(f"C{r.comunidade} {r.fracao_peso_interno:.2f}" for r in c.head(3).itertuples()))
+    print("  mais coesas:  " + "; ".join(f"C{r.comunidade} {r.fracao_peso_interno:.2f}" for r in c.tail(3).itertuples()))
 
 def q2(obras):
     print("=" * 70, "\nQ2 — Como as áreas evoluíram (volume e impacto)?\n")

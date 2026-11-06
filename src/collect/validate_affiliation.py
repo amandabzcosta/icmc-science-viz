@@ -4,7 +4,6 @@ import random
 import re
 from collections import Counter
 from pathlib import Path
-
 from afiliacao import autoria_icmc, normalizar, regra_que_casa
 from openalex_api import carregar_config
 

@@ -1,19 +1,12 @@
-"""V4 — Ranking de autores-ponte, com as citações ao lado. Responde Q3.
-
-Dois painéis lado a lado com o mesmo eixo de autores (pequenos múltiplos, NÃO eixo duplo):
-à esquerda a métrica de ponte, à direita o total de citações.
-Interações (1ª entrega): escolher a métrica, ordenar, tooltip, clique -> detalhes.
-"""
 import pandas as pd
 import plotly.graph_objects as go
 from dash import Input, Output, dcc, html
 from plotly.subplots import make_subplots
-
 from componentes import cartao, colunas_e_linhas, detalhes_autor, dica, painel_tabela
 from dados import METRICAS, cor_comunidade, nome_comunidade
 from tema import aplicar_tema
 
-GRAU_MINIMO = 5   # decisão D22: participação alta com poucos coautores é acaso
+GRAU_MINIMO = 5
 N_AUTORES = 20
 METRICAS_PONTE = {
     "participacao": "Participação (maior = mais ponte)",
@@ -22,21 +15,18 @@ METRICAS_PONTE = {
 }
 DICA = "Clique em uma barra para ver os detalhes do autor."
 
-
 def selecionar(metrica, ordenar_por):
     candidatos = METRICAS[METRICAS["grau"] >= GRAU_MINIMO]
     menor_e_melhor = metrica == "constraint"
     top = candidatos.sort_values(metrica, ascending=menor_e_melhor).head(N_AUTORES)
     if ordenar_por == "citacoes":
         top = top.sort_values("citacoes_total", ascending=False)
-    return top.iloc[::-1]  # o 1º do ranking fica no topo do gráfico
-
+    return top.iloc[::-1]
 
 def figura(metrica, ordenar_por):
     top = selecionar(metrica, ordenar_por)
     cores = top["comunidade"].map(cor_comunidade)
-    # O código da comunidade no rótulo é a 2ª pista além da cor: na simulação de
-    # protanopia/deuteranopia, laranja (C1), amarelo (C3) e verde (C5) ficam iguais.
+
     rotulos = top["nome"] + " · C" + top["comunidade"].astype(str)
     dados = list(zip(top["autor_id"], top["comunidade"].map(nome_comunidade), top["grau"]))
     fig = make_subplots(rows=1, cols=2, shared_yaxes=True, column_widths=[0.58, 0.42], horizontal_spacing=0.03,
@@ -50,18 +40,16 @@ def figura(metrica, ordenar_por):
                          hovertemplate="<b>%{y}</b><br>%{x} citações<extra></extra>"), row=1, col=2)
     fig.update_annotations(font=dict(size=12))
     aplicar_tema(fig, altura=560)
-    fig.update_layout(bargap=0.25, margin=dict(t=30))  # espaço para os títulos dos dois painéis
+    fig.update_layout(bargap=0.25, margin=dict(t=30))
     return fig
 
-
 def tabela(metrica, ordenar_por):
-    top = selecionar(metrica, ordenar_por).iloc[::-1]  # de volta à ordem do ranking
+    top = selecionar(metrica, ordenar_por).iloc[::-1]
     return pd.DataFrame({
         "Autor": top["nome"], "Comunidade": top["comunidade"].map(nome_comunidade),
         METRICAS_PONTE[metrica]: top[metrica].round(3), "Coautores ICMC": top["grau"],
         "Citações": top["citacoes_total"],
     })
-
 
 def layout():
     controles = [
@@ -77,7 +65,6 @@ def layout():
                   controles, dcc.Graph(id="ranking-grafico", config={"displaylogo": False}),
                   html.Div([nota, html.Div(id="ranking-detalhes", children=dica(DICA)),
                             painel_tabela("ranking-tabela")]))
-
 
 def registrar_callbacks(app):
     @app.callback(Output("ranking-grafico", "figure"), Output("ranking-tabela", "columns"),

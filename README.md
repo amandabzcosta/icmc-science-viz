@@ -2,7 +2,7 @@
 
 **Análise visual de colaborações científicas no ICMC-USP (2010–2026)**
 
-Aplicativo interativo e conjunto de dados sobre a produção científica do Instituto de Ciências
+App interativo e conjunto de dados sobre a produção científica do Instituto de Ciências
 Matemáticas e de Computação da USP (São Carlos): quem publica com quem, como as áreas de pesquisa
 evoluem e quais autores fazem a ponte entre grupos diferentes.
 
@@ -13,7 +13,7 @@ Autora: Amanda Bezerra da Costa.
 
 ## Sobre o projeto
 
-Cada artigo registra autores, afiliações, temas e citações, mas essa informação raramente é vista
+Cada artigo registra autores, afiliações, temas e citações, mas essa informação não é comumente vista
 em conjunto. Este projeto reúne a produção do ICMC numa base única e a explora com visualizações
 interativas para responder três perguntas:
 
@@ -59,7 +59,7 @@ em cada etapa), `rede_resumo.json` (tamanho da rede e modularidade) e `autores_f
 
 ## As visualizações
 
-O aplicativo reúne quatro visualizações. Cada uma tem tooltip, detalhes sob demanda e a opção
+O app reúne quatro visualizações. Cada uma tem tooltip, detalhes sob demanda e a opção
 "Ver os dados em tabela".
 
 | Visualização | Pergunta | Interações |
@@ -86,7 +86,7 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### Abrir o aplicativo
+### Abrir o app
 
 As tabelas processadas já estão no repositório, então basta:
 
@@ -94,7 +94,7 @@ As tabelas processadas já estão no repositório, então basta:
 python app/app.py
 ```
 
-e abrir http://127.0.0.1:8050. O aplicativo funciona sem internet.
+e abrir http://127.0.0.1:8050. O app funciona sem internet.
 
 ### Reproduzir os dados do zero
 
@@ -120,7 +120,7 @@ python src/process/evidencias_q1_q3.py                       # números que resp
 ```bash
 python src/report/gerar_figuras.py                     # todas, em tamanho de slide e de documento
 python src/report/gerar_figuras.py --so v3_treemap     # só uma
-python src/report/gerar_figuras.py --com-app           # inclui um print da tela inteira do aplicativo
+python src/report/gerar_figuras.py --com-app           # inclui um print da tela inteira do app
 ```
 
 Cada visualização é salva sozinha, em alta resolução, em `report/entrega1/figuras/individuais/`.
@@ -138,7 +138,7 @@ O pacote leva o código, as tabelas processadas e o conjunto coletado, mas nunca
 
 ```
 icmc-science-viz/
-├── app/                     aplicativo Dash
+├── app/                     app Dash
 │   ├── app.py               ponto de entrada
 │   ├── dados.py             carrega as tabelas e define cores das comunidades
 │   ├── tema.py              aparência dos gráficos e tamanhos de exportação
@@ -150,7 +150,7 @@ icmc-science-viz/
 │   └── report/              imagens das visualizações e simulação de daltonismo
 ├── data/
 │   ├── raw/                 cache da coleta (fora do git)
-│   └── processed/           tabelas prontas para o aplicativo
+│   └── processed/           tabelas prontas para o app
 ├── report/                  imagens geradas
 ├── config.yaml              parâmetros de coleta, escopo, regras de afiliação e rede
 └── requirements.txt

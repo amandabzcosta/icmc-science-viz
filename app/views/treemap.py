@@ -1,22 +1,13 @@
-"""V3 — Treemap da hierarquia de tópicos (domínio > campo > subcampo > tópico). Responde Q2.
-
-Área = nº de obras; cor = citações por ano, em média (citações ÷ anos desde a publicação).
-(Citações normalizadas por campo não servem aqui: no nível de campo a média delas é ~1 por construção.)
-Interações (1ª entrega): clique para descer/subir (barra de caminho), tooltip,
-detalhes com as obras mais citadas do retângulo clicado.
-"""
 import plotly.express as px
 from dash import Input, Output, dcc, html
-
 from componentes import cartao, dica, lista_obras, painel_tabela
 from dados import OBRAS
 from tema import SEQUENCIAL, aplicar_tema
 
 NIVEIS = ["dominio", "campo", "subcampo", "topico"]
 RAIZ = "ICMC"
-LIMITE_COR = 5  # cobre 95% dos campos, subcampos e tópicos; acima disso, cor máxima
+LIMITE_COR = 5
 DICA = "Clique em um retângulo para descer um nível e ver as obras mais citadas daquela área."
-
 
 def figura():
     dados = OBRAS.dropna(subset=NIVEIS).assign(n=1)
@@ -35,16 +26,12 @@ def figura():
                                               ticktext=["0", "1", "2", "3", "4", "≥ 5"]))
     return aplicar_tema(fig, altura=480)
 
-
 def obras_do_caminho(id_retangulo):
-    """O id do retângulo é o caminho 'ICMC/domínio/campo/...'; filtra as obras desse caminho."""
-    # maxsplit=4: alguns tópicos têm "/" no nome (ex.: "IoT and Edge/Fog Computing") e são o último nível
-    partes = id_retangulo.split("/", maxsplit=len(NIVEIS))[1:]  # tira a raiz
+    partes = id_retangulo.split("/", maxsplit=len(NIVEIS))[1:]
     filtro = OBRAS
     for nivel, valor in zip(NIVEIS, partes):
         filtro = filtro[filtro[nivel] == valor]
     return partes, filtro
-
 
 def tabela_subcampos():
     return (OBRAS.groupby(["campo", "subcampo"])
@@ -52,13 +39,11 @@ def tabela_subcampos():
             .reset_index().sort_values("Obras", ascending=False)
             .rename(columns={"campo": "Campo", "subcampo": "Subcampo"}))
 
-
 def layout():
     return cartao("Hierarquia de tópicos", "Q2: quais áreas concentram a produção e qual o impacto de cada uma?",
                   [], dcc.Graph(id="treemap-grafico", figure=figura(), config={"displaylogo": False}),
                   html.Div([html.Div(id="treemap-detalhes", children=dica(DICA)),
                             painel_tabela("treemap-tabela", tabela_subcampos())]))
-
 
 def registrar_callbacks(app):
     @app.callback(Output("treemap-detalhes", "children"), Input("treemap-grafico", "clickData"))
