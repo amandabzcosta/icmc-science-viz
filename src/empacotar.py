@@ -2,12 +2,15 @@ import argparse
 import zipfile
 from pathlib import Path
 
-ARQUIVOS = ["README.md", "requirements.txt", "config.yaml", ".env.example",
+ARQUIVOS = ["README.md", "LICENSE", "requirements.txt", "config.yaml", ".env.example",
             "data/raw/obras_unidas.jsonl", "data/raw/log_coleta.jsonl"]
-PASTAS = ["src", "app", "docs", "data/processed"]
+PASTAS = ["src", "app", "data/processed"]
 IGNORAR = {"__pycache__", ".env", ".venv"}
 
 def listar_arquivos():
+    faltando = [a for a in ARQUIVOS if not Path(a).is_file()]
+    if faltando:
+        raise SystemExit(f"Arquivos não encontrados: {', '.join(faltando)}")
     lista = [Path(a) for a in ARQUIVOS]
     for pasta in PASTAS:
         lista += [p for p in Path(pasta).rglob("*") if p.is_file()]
